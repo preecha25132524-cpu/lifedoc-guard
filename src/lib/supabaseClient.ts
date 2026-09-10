@@ -17,5 +17,13 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    // Magic-link emails often get opened in a different browser context than
+    // the one that requested them (Gmail's in-app browser, a different
+    // default browser, etc). The default PKCE flow needs a secret stored by
+    // the requesting browser, which isn't there in that other context, so
+    // the sign-in silently fails. Implicit flow carries the session in the
+    // redirect URL itself instead, so it works no matter where the link is
+    // opened — the right tradeoff for a magic-link-only, no-password app.
+    flowType: 'implicit',
   },
 })
