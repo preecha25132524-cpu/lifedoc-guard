@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Header } from '@/components/Header'
 import { SummaryCards } from '@/components/SummaryCards'
 import { Toolbar, type StatusFilter } from '@/components/Toolbar'
@@ -48,6 +48,13 @@ function App() {
   const [deleteTarget, setDeleteTarget] = useState<ComputedDoc | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
   const [syncDialogOpen, setSyncDialogOpen] = useState(false)
+
+  // A password-reset email link lands back on the app and fires this flag —
+  // pop the sync dialog open automatically so the user sees the "set a new
+  // password" form instead of just landing on their document list.
+  useEffect(() => {
+    if (auth.passwordRecovery) setSyncDialogOpen(true)
+  }, [auth.passwordRecovery])
 
   const filteredDocuments = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -215,9 +222,12 @@ function App() {
         status={auth.status}
         email={auth.email}
         syncState={syncState}
+        passwordRecovery={auth.passwordRecovery}
         onSignIn={auth.signIn}
         onSignUp={auth.signUp}
         onSignOut={auth.signOut}
+        onResetPassword={auth.resetPassword}
+        onUpdatePassword={auth.updatePassword}
       />
     </div>
   )
