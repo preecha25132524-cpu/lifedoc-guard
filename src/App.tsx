@@ -215,7 +215,8 @@ function App() {
         status={auth.status}
         email={auth.email}
         syncState={syncState}
-        onSignIn={auth.signInWithEmail}
+        onSignIn={auth.signIn}
+        onSignUp={auth.signUp}
         onSignOut={auth.signOut}
       />
     </div>

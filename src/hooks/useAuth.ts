@@ -5,9 +5,15 @@ import { supabase } from '@/lib/supabaseClient'
 export type AuthStatus = 'loading' | 'signedOut' | 'signedIn'
 
 /**
- * Passwordless (magic-link) auth against Supabase. Signing in is entirely
- * optional — the app works fully offline/local without it. Signing in only
- * turns on cross-device sync via the `documents` cloud table.
+ * Email + password auth against Supabase. Signing in is entirely optional —
+ * the app works fully offline/local without it. Signing in only turns on
+ * cross-device sync via the `documents` cloud table.
+ *
+ * (Switched from passwordless magic-link auth: magic links require an email
+ * round-trip on every sign-in, which hit Supabase's free-tier email rate
+ * limit during testing and, opened from an email app's in-app browser, could
+ * silently fail. Password auth needs email delivery only once, for the
+ * optional signup confirmation — not on every sign-in.)
  */
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null)
@@ -33,14 +39,24 @@ export function useAuth() {
     }
   }, [])
 
-  const signInWithEmail = useCallback(async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
+  const signIn = useCallback(async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
+      password,
     })
     return { error: error?.message ?? null }
+  }, [])
+
+  const signUp = useCallback(async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+    })
+    if (error) return { error: error.message, needsConfirmation: false }
+    // If "Confirm email" is on in Supabase, signUp returns a user but no
+    // session yet — the account only becomes usable after the confirmation
+    // link is clicked.
+    return { error: null, needsConfirmation: !data.session }
   }, [])
 
   const signOut = useCallback(async () => {
@@ -53,7 +69,8 @@ export function useAuth() {
     user: session?.user ?? null,
     userId: session?.user?.id ?? null,
     email: session?.user?.email ?? null,
-    signInWithEmail,
+    signIn,
+    signUp,
     signOut,
   }
 }

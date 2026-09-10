@@ -20,7 +20,11 @@ interface SyncDialogProps {
   status: AuthStatus
   email: string | null
   syncState: SyncState
-  onSignIn: (email: string) => Promise<{ error: string | null }>
+  onSignIn: (email: string, password: string) => Promise<{ error: string | null }>
+  onSignUp: (
+    email: string,
+    password: string,
+  ) => Promise<{ error: string | null; needsConfirmation: boolean }>
   onSignOut: () => void
 }
 
@@ -31,6 +35,8 @@ const SYNC_LABEL: Record<SyncState, string> = {
   error: 'ซิงก์ข้อมูลล้มเหลว ลองใหม่ภายหลัง',
 }
 
+type Mode = 'signin' | 'signup'
+
 export function SyncDialog({
   open,
   onOpenChange,
@@ -38,31 +44,53 @@ export function SyncDialog({
   email,
   syncState,
   onSignIn,
+  onSignUp,
   onSignOut,
 }: SyncDialogProps) {
+  const [mode, setMode] = useState<Mode>('signin')
   const [inputEmail, setInputEmail] = useState('')
-  const [sending, setSending] = useState(false)
-  const [sent, setSent] = useState(false)
+  const [inputPassword, setInputPassword] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSend() {
-    if (!inputEmail.trim()) return
-    setSending(true)
+  async function handleSubmit() {
+    if (!inputEmail.trim() || !inputPassword) return
+    setSubmitting(true)
     setError(null)
-    const { error: sendError } = await onSignIn(inputEmail.trim())
-    setSending(false)
-    if (sendError) {
-      setError(sendError)
+    if (mode === 'signin') {
+      const { error: signInError } = await onSignIn(inputEmail, inputPassword)
+      setSubmitting(false)
+      if (signInError) setError(translateAuthError(signInError))
     } else {
-      setSent(true)
+      const { error: signUpError, needsConfirmation: needsConfirm } = await onSignUp(
+        inputEmail,
+        inputPassword,
+      )
+      setSubmitting(false)
+      if (signUpError) {
+        setError(translateAuthError(signUpError))
+      } else if (needsConfirm) {
+        setNeedsConfirmation(true)
+      }
+      // If !needsConfirm, Supabase already returned a session — the dialog
+      // will flip to the signed-in view automatically via auth state.
     }
+  }
+
+  function switchMode(next: Mode) {
+    setMode(next)
+    setError(null)
+    setNeedsConfirmation(false)
   }
 
   function handleOpenChange(next: boolean) {
     if (!next) {
-      setSent(false)
-      setError(null)
       setInputEmail('')
+      setInputPassword('')
+      setError(null)
+      setNeedsConfirmation(false)
+      setMode('signin')
     }
     onOpenChange(next)
   }
@@ -73,8 +101,7 @@ export function SyncDialog({
         <DialogHeader>
           <DialogTitle>ซิงก์ข้อมูลข้ามอุปกรณ์</DialogTitle>
           <DialogDescription>
-            เข้าสู่ระบบครั้งเดียวเพื่อให้ PC และมือถือเห็นรายการเอกสารชุดเดียวกันโดยอัตโนมัติ
-            (ไม่ต้องตั้งรหัสผ่าน — ใช้ลิงก์ยืนยันทางอีเมล)
+            เข้าสู่ระบบด้วยบัญชีเดียวกันบน PC และมือถือ เพื่อให้เห็นรายการเอกสารชุดเดียวกันโดยอัตโนมัติ
           </DialogDescription>
         </DialogHeader>
 
@@ -89,27 +116,48 @@ export function SyncDialog({
                     ? SYNC_LABEL.syncing
                     : syncState === 'error'
                       ? SYNC_LABEL.error
-                      : 'อุปกรณ์อื่นที่เข้าสู่ระบบด้วยอีเมลเดียวกันจะเห็นข้อมูลชุดนี้ทันที'}
+                      : 'อุปกรณ์อื่นที่เข้าสู่ระบบด้วยบัญชีเดียวกันจะเห็นข้อมูลชุดนี้ทันที'}
                 </p>
               </div>
             </div>
             <p className="text-xs text-muted-foreground">
-              เปิดแอปนี้บนมือถือ แล้วกดปุ่มซิงก์นี้ → เข้าสู่ระบบด้วยอีเมลเดียวกัน
+              เปิดแอปนี้บนมือถือ แล้วกดปุ่มซิงก์นี้ → เข้าสู่ระบบด้วยอีเมล/รหัสผ่านเดียวกัน
               ก็จะเห็นเอกสารชุดเดียวกันทันที
             </p>
           </div>
-        ) : sent ? (
+        ) : needsConfirmation ? (
           <div className="flex items-start gap-3 rounded-xl border border-primary/30 bg-primary/10 px-3 py-3">
             <MailCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
             <div className="space-y-1">
-              <p className="text-sm font-medium">ส่งลิงก์เข้าสู่ระบบไปที่ {inputEmail} แล้ว</p>
+              <p className="text-sm font-medium">สมัครสมาชิกสำเร็จ — ยืนยันอีเมล {inputEmail} ก่อนเข้าใช้งาน</p>
               <p className="text-xs text-muted-foreground">
-                เปิดอีเมลแล้วกดลิงก์เพื่อเข้าสู่ระบบ (เช็คโฟลเดอร์สแปมด้วยถ้าไม่เจอ)
+                เช็คอีเมลแล้วกดลิงก์ยืนยัน (เช็คโฟลเดอร์สแปมด้วยถ้าไม่เจอ) จากนั้นกลับมาเข้าสู่ระบบด้วยรหัสผ่านที่ตั้งไว้
               </p>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
+            <div className="flex gap-1 rounded-lg bg-muted p-1 text-sm">
+              <button
+                type="button"
+                onClick={() => switchMode('signin')}
+                className={`flex-1 rounded-md py-1.5 font-medium transition-colors ${
+                  mode === 'signin' ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                }`}
+              >
+                เข้าสู่ระบบ
+              </button>
+              <button
+                type="button"
+                onClick={() => switchMode('signup')}
+                className={`flex-1 rounded-md py-1.5 font-medium transition-colors ${
+                  mode === 'signup' ? 'bg-background shadow-sm' : 'text-muted-foreground'
+                }`}
+              >
+                สมัครสมาชิก
+              </button>
+            </div>
+
             <div className="space-y-1.5">
               <Label htmlFor="sync-email">อีเมล</Label>
               <Input
@@ -118,13 +166,24 @@ export function SyncDialog({
                 placeholder="you@example.com"
                 value={inputEmail}
                 onChange={(e) => setInputEmail(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="sync-password">รหัสผ่าน</Label>
+              <Input
+                id="sync-password"
+                type="password"
+                placeholder={mode === 'signup' ? 'อย่างน้อย 6 ตัวอักษร' : '••••••••'}
+                value={inputPassword}
+                onChange={(e) => setInputPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
               />
             </div>
             {error && <p className="text-xs text-critical">{error}</p>}
             <p className="text-xs text-muted-foreground">
-              ใช้อีเมลเดียวกันทุกอุปกรณ์ที่ต้องการให้ข้อมูลตรงกัน
-              ข้อมูลที่มีอยู่แล้วในเครื่องนี้จะถูกอัปโหลดขึ้นไปให้อัตโนมัติ
+              {mode === 'signup'
+                ? 'ใช้บัญชีเดียวกันทุกอุปกรณ์ที่ต้องการให้ข้อมูลตรงกัน ข้อมูลที่มีอยู่แล้วในเครื่องนี้จะถูกอัปโหลดขึ้นไปให้อัตโนมัติ'
+                : 'ใช้บัญชีเดียวกันทุกอุปกรณ์ที่ต้องการให้ข้อมูลตรงกัน'}
             </p>
           </div>
         )}
@@ -134,18 +193,31 @@ export function SyncDialog({
             <Button variant="outline" onClick={onSignOut}>
               ออกจากระบบ
             </Button>
-          ) : sent ? (
-            <Button variant="outline" onClick={() => setSent(false)}>
-              ส่งลิงก์อีกครั้ง
+          ) : needsConfirmation ? (
+            <Button variant="outline" onClick={() => setNeedsConfirmation(false)}>
+              กลับไปเข้าสู่ระบบ
             </Button>
           ) : (
-            <Button onClick={handleSend} disabled={sending || !inputEmail.trim()}>
-              {sending && <Loader2 className="h-4 w-4 animate-spin" />}
-              ส่งลิงก์เข้าสู่ระบบ
+            <Button
+              onClick={handleSubmit}
+              disabled={submitting || !inputEmail.trim() || inputPassword.length < 6}
+            >
+              {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+              {mode === 'signin' ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}
             </Button>
           )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
   )
+}
+
+function translateAuthError(message: string): string {
+  const m = message.toLowerCase()
+  if (m.includes('invalid login credentials')) return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'
+  if (m.includes('user already registered')) return 'อีเมลนี้สมัครสมาชิกไว้แล้ว ลองเข้าสู่ระบบแทน'
+  if (m.includes('password should be at least')) return 'รหัสผ่านสั้นเกินไป (อย่างน้อย 6 ตัวอักษร)'
+  if (m.includes('email not confirmed')) return 'ยังไม่ได้ยืนยันอีเมล กรุณาเช็คกล่องจดหมาย'
+  if (m.includes('email rate limit')) return 'ส่งอีเมลถี่เกินไป กรุณารอสักครู่แล้วลองใหม่'
+  return message
 }
