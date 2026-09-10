@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>คู่มือ LifeDoc Guard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Sarabun:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+  :root {
+    --bg: #EDF6FD;
+    --surface: #FFFFFF;
+    --surface-alt: #F2F8FE;
+    --surface-sunk: #E4EFFA;
+    --text: #15304F;
+    --text-muted: #52698A;
+    --border: #D6E5F5;
+    --accent: #1B5FB8;
+    --accent-strong: #F96A0A;
+    --accent-strong-ink: #FFFFFF;
+    --highlight: #C98A00;
+    --navy-deep: #16345E;
+    --qr-dark: #16345E;
+    --qr-light: #FFFFFF;
+    --shadow: 215 60% 30%;
+    --focus: #1B5FB8;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0A1522;
+      --surface: #101D30;
+      --surface-alt: #142438;
+      --surface-sunk: #0D1A2B;
+      --text: #EAF2FB;
+      --text-muted: #93A9C8;
+      --border: #223A57;
+      --accent: #5B9EE8;
+      --accent-strong: #FF8A42;
+      --accent-strong-ink: #1A0D02;
+      --highlight: #FFC93C;
+      --navy-deep: #0D2140;
+      --qr-dark: #0D2140;
+      --qr-light: #EAF2FB;
+      --shadow: 210 80% 3%;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0A1522;
+    --surface: #101D30;
+    --surface-alt: #142438;
+    --surface-sunk: #0D1A2B;
+    --text: #EAF2FB;
+    --text-muted: #93A9C8;
+    --border: #223A57;
+    --accent: #5B9EE8;
+    --accent-strong: #FF8A42;
+    --accent-strong-ink: #1A0D02;
+    --highlight: #FFC93C;
+    --navy-deep: #0D2140;
+    --qr-dark: #0D2140;
+    --qr-light: #EAF2FB;
+    --shadow: 210 80% 3%;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sarabun', 'Noto Sans Thai', sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    padding-inline: 20px;
+    padding-block: 40px 64px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 { font-family: 'Kanit', 'Sarabun', sans-serif; text-wrap: balance; margin: 0; }
+
+  a { color: var(--accent); }
+
+  .page {
+    max-width: 760px;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* ---------- Header ---------- */
+  .masthead {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .masthead .mark {
+    width: 46px; height: 46px; flex-shrink: 0;
+    border-radius: 13px;
+    background: linear-gradient(155deg, #2F7FD8, var(--navy-deep));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px -8px hsl(var(--shadow) / 0.5);
+  }
+  .masthead .mark svg { width: 24px; height: 24px; stroke: #fff; }
+  .masthead h1 { font-size: 1.5rem; font-weight: 700; color: var(--text); }
+  .masthead p { margin: 2px 0 0; color: var(--text-muted); font-size: 0.92rem; }
+
+  /* ---------- Section shell ---------- */
+  section { display: flex; flex-direction: column; gap: 16px; }
+  .section-head { display: flex; align-items: center; gap: 10px; }
+  .section-head .chip {
+    width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--surface-alt); color: var(--accent);
+    border: 1px solid var(--border);
+  }
+  .section-head .chip svg { width: 18px; height: 18px; }
+  .section-head h2 { font-size: 1.15rem; font-weight: 600; color: var(--text); }
+  .section-lede { color: var(--text-muted); font-size: 0.94rem; max-width: 62ch; margin: -6px 0 0; }
+
+  .icon { stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ---------- Quick access ---------- */
+  .access-card {
+    background: linear-gradient(160deg, var(--navy-deep), #0d2140 130%);
+    border-radius: 20px;
+    padding: 24px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 22px;
+    align-items: center;
+    color: #EAF2FB;
+  }
+  .qr-box {
+    background: var(--qr-light);
+    border-radius: 14px;
+    padding: 10px;
+    width: 132px; height: 132px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .qr-box #qr-target { line-height: 0; }
+  .access-info { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .access-info .eyebrow { font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: #9FC3EF; font-weight: 600; }
+  .link-row {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 10px;
+    padding: 9px 10px;
+  }
+  .link-row code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: #EAF2FB;
+    overflow-x: auto;
+    white-space: nowrap;
+    flex: 1;
+    scrollbar-width: none;
+  }
+  .link-row code::-webkit-scrollbar { display: none; }
+  .copy-btn {
+    flex-shrink: 0;
+    background: var(--accent-strong);
+    color: var(--accent-strong-ink);
+    border: none; border-radius: 7px;
+    padding: 6px 10px;
+    font-family: 'Sarabun', sans-serif; font-weight: 600; font-size: 0.8rem;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .copy-btn svg { width: 14px; height: 14px; }
+  .copy-btn:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .access-hint { font-size: 0.82rem; color: #B9D4F3; margin: 0; }
+
+  @media (max-width: 480px) {
+    .access-card { grid-template-columns: 1fr; text-align: center; }
+    .qr-box { margin-inline: auto; }
+    .link-row { text-align: left; }
+    .link-row code { white-space: normal; overflow-x: visible; word-break: break-all; font-size: 0.78rem; }
+  }
+
+  /* ---------- Install steps ---------- */
+  .platforms { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 560px) { .platforms { grid-template-columns: 1fr; } }
+
+  .platform-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 18px 20px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .platform-title { display: flex; align-items: center; gap: 9px; }
+  .platform-title svg { width: 19px; height: 19px; color: var(--accent); }
+  .platform-title span { font-weight: 600; font-family: 'Kanit', sans-serif; font-size: 1rem; }
+
+  .steps { display: flex; flex-direction: column; gap: 11px; counter-reset: step; }
+  .step { display: grid; grid-template-columns: 24px 1fr; gap: 10px; align-items: start; }
+  .step .num {
+    counter-increment: step;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--surface-alt); border: 1px solid var(--border);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem; font-weight: 700; font-family: 'Kanit', sans-serif;
+  }
+  .step .num::before { content: counter(step); }
+  .step p { margin: 0; font-size: 0.92rem; padding-top: 2px; }
+  .step .kbd {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--surface-sunk); border: 1px solid var(--border);
+    border-radius: 6px; padding: 1px 6px; font-size: 0.82rem;
+    color: var(--text);
+  }
+  .step .kbd svg { width: 13px; height: 13px; }
+
+  /* ---------- Legend grid ---------- */
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 560px) { .legend-grid { grid-template-columns: 1fr; } }
+
+  .legend-item {
+    display: grid; grid-template-columns: 38px 1fr; gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 13px 14px;
+  }
+  .legend-item .icon-box {
+    width: 38px; height: 38px; border-radius: 10px;
+    background: var(--surface-alt);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--accent);
+  }
+  .legend-item.gold .icon-box { color: var(--highlight); }
+  .legend-item.orange .icon-box { color: var(--accent-strong); }
+  .legend-item .icon-box svg { width: 19px; height: 19px; }
+  .legend-item h3 { font-size: 0.92rem; font-weight: 600; font-family: 'Sarabun', sans-serif; }
+  .legend-item p { margin: 3px 0 0; font-size: 0.83rem; color: var(--text-muted); }
+
+  /* ---------- Remember strip ---------- */
+  .remember {
+    background: var(--surface-alt);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex; flex-direction: column; gap: 13px;
+  }
+  .remember-item { display: grid; grid-template-columns: 22px 1fr; gap: 11px; }
+  .remember-item svg { width: 20px; height: 20px; color: var(--accent-strong); margin-top: 1px; }
+  .remember-item p { margin: 0; font-size: 0.9rem; }
+  .remember-item b { font-weight: 600; }
+
+  footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+
+<!-- icon sprite -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-shield" viewBox="0 0 24 24"><path class="icon" d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></symbol>
+  <symbol id="i-smartphone" viewBox="0 0 24 24"><rect class="icon" x="6" y="2.5" width="12" height="19" rx="2.5"/><path class="icon" d="M10.5 18.5h3"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path class="icon" d="M9.5 14.5l5-5"/><path class="icon" d="M11 6.5l1-1a4 4 0 015.5 5.5l-1.5 1.5"/><path class="icon" d="M13 17.5l-1 1A4 4 0 016.5 13l1.5-1.5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect class="icon" x="9" y="9" width="11" height="11" rx="2"/><path class="icon" d="M5.5 15H5a2 2 0 01-2-2V5a2 2 0 012-2h8a2 2 0 012 2v.5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path class="icon" d="M5 12.5l4.5 4.5L19 7"/></symbol>
+  <symbol id="i-share-ios" viewBox="0 0 24 24"><path class="icon" d="M12 15V4"/><path class="icon" d="M8 7.5L12 3.5l4 4"/><path class="icon" d="M6 10.5h-.5A1.5 1.5 0 004 12v7a1.5 1.5 0 001.5 1.5h13A1.5 1.5 0 0020 19v-7a1.5 1.5 0 00-1.5-1.5H18"/></symbol>
+  <symbol id="i-plus-square" viewBox="0 0 24 24"><rect class="icon" x="3.5" y="3.5" width="17" height="17" rx="3.5"/><path class="icon" d="M12 8v8M8 12h8"/></symbol>
+  <symbol id="i-dots-v" viewBox="0 0 24 24"><circle class="icon" cx="12" cy="5.5" r="1"/><circle class="icon" cx="12" cy="12" r="1"/><circle class="icon" cx="12" cy="18.5" r="1"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path class="icon" d="M12 3.5l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17.3l-5.4 3.1 1-6.1-4.4-4.3 6.1-.9L12 3.5z"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle class="icon" cx="6" cy="12" r="1"/><circle class="icon" cx="12" cy="12" r="1"/><circle class="icon" cx="18" cy="12" r="1"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path class="icon" d="M6 10.5a6 6 0 0112 0c0 4 1.3 5.3 1.3 5.3H4.7S6 14.5 6 10.5z"/><path class="icon" d="M9.5 18.5a2.5 2.5 0 005 0"/></symbol>
+  <symbol id="i-theme" viewBox="0 0 24 24"><path class="icon" d="M20 14.5A8.5 8.5 0 019.5 4a8.5 8.5 0 1010.5 10.5z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle class="icon" cx="10.5" cy="10.5" r="6.5"/><path class="icon" d="M19.5 19.5L15 15"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path class="icon" d="M4 6h16M7 12h10M10 18h4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path class="icon" d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path class="icon" d="M12 4v11"/><path class="icon" d="M7.5 11L12 15.5 16.5 11"/><path class="icon" d="M4.5 18.5h15"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path class="icon" d="M12 19V8"/><path class="icon" d="M7.5 12L12 7.5 16.5 12"/><path class="icon" d="M4.5 18.5h15"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect class="icon" x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path class="icon" d="M3.5 9.5h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path class="icon" d="M6.5 3.5h11a1 1 0 011 1V21l-6.5-4-6.5 4V4.5a1 1 0 011-1z"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path class="icon" d="M4.5 12a7.5 7.5 0 0112.6-5.5M19.5 12a7.5 7.5 0 01-12.6 5.5"/><path class="icon" d="M17 3.5v3.5h-3.5M7 20.5V17h3.5"/></symbol>
+</svg>
+
+<div class="page">
+
+  <div class="masthead">
+    <div class="mark"><svg><use href="#i-shield"/></svg></div>
+    <div>
+      <h1>คู่มือ LifeDoc Guard</h1>
+      <p>ใช้งานแอป &amp; ติดตั้งบนมือถือ — ฉบับกันลืม</p>
+    </div>
+  </div>
+
+  <!-- QUICK ACCESS -->
+  <section>
+    <div class="access-card">
+      <div class="qr-box"><div id="qr-target"></div></div>
+      <div class="access-info">
+        <span class="eyebrow">ลิงก์เข้าใช้งาน</span>
+        <div class="link-row">
+          <code id="app-url">lifedoc-guard.netlify.app</code>
+          <button class="copy-btn" id="copy-btn" type="button">
+            <svg class="icon"><use href="#i-copy"/></svg><span id="copy-label">คัดลอก</span>
+          </button>
+        </div>
+        <p class="access-hint">สแกน QR หรือเปิดลิงก์นี้บนมือถือได้จากทุกที่ ไม่ต้องอยู่ Wi-Fi วงเดียวกับคอม</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- MOBILE INSTALL -->
+  <section>
+    <div class="section-head">
+      <div class="chip"><svg class="icon"><use href="#i-smartphone"/></svg></div>
+      <h2>ติดตั้งบนมือถือ (เพิ่มไปหน้าจอโฮม)</h2>
+    </div>
+    <p class="section-lede">ทำครั้งเดียว จะได้ไอคอนแอปบนหน้าจอโฮม เปิดใช้เหมือนแอปจริง และเปิดรับการแจ้งเตือนได้ (โดยเฉพาะ iPhone ที่ต้องติดตั้งก่อนถึงจะแจ้งเตือนได้)</p>
+
+    <div class="platforms">
+      <div class="platform-card">
+        <div class="platform-title"><svg><use href="#i-share-ios"/></svg><span>iPhone (Safari)</span></div>
+        <div class="steps">
+          <div class="step"><span class="num"></span><p>เปิดลิงก์แอปด้วย <b>Safari</b> (ต้องเป็น Safari เท่านั้น)</p></div>
+          <div class="step"><span class="num"></span><p>แตะไอคอน <span class="kbd"><svg class="icon"><use href="#i-share-ios"/></svg>แชร์</span> แถบด้านล่าง</p></div>
+          <div class="step"><span class="num"></span><p>เลื่อนลงแล้วแตะ <b>“เพิ่มไปยังหน้าจอโฮม”</b></p></div>
+          <div class="step"><span class="num"></span><p>แตะ <b>“เพิ่ม”</b> มุมขวาบน — เสร็จแล้ว</p></div>
+        </div>
+      </div>
+
+      <div class="platform-card">
+        <div class="platform-title"><svg><use href="#i-dots-v"/></svg><span>Android (Chrome)</span></div>
+        <div class="steps">
+          <div class="step"><span class="num"></span><p>เปิดลิงก์แอปด้วย <b>Chrome</b></p></div>
+          <div class="step"><span class="num"></span><p>แตะเมนู <span class="kbd"><svg class="icon"><use href="#i-dots-v"/></svg>จุดสามจุด</span> มุมขวาบน</p></div>
+          <div class="step"><span class="num"></span><p>เลือก <b>“ติดตั้งแอป”</b> หรือ <b>“เพิ่มไปยังหน้าจอโฮม”</b></p></div>
+          <div class="step"><span class="num"></span><p>แตะ <b>“ติดตั้ง”</b> — เสร็จแล้ว</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEGEND -->
+  <section>
+    <div class="section-head">
+      <div class="chip"><svg class="icon"><use href="#i-more"/></svg></div>
+      <h2>สัญลักษณ์ในแอป</h2>
+    </div>
+    <p class="section-lede">ไอคอนหลักที่เจอในหน้าแอป และหน้าที่ของแต่ละปุ่ม</p>
+
+    <div class="legend-grid">
+      <div class="legend-item gold">
+        <div class="icon-box"><svg class="icon"><use href="#i-star"/></svg></div>
+        <div><h3>ปักหมุดโปรด</h3><p>กดดาวบนการ์ดเอกสาร จะลอยขึ้นบนสุดของรายการ</p></div>
+      </div>
+      <div class="legend-item">
+        <div class="icon-box"><svg class="icon"><use href="#i-more"/></svg></div>
+        <div><h3>เมนู ⋯</h3><p>แก้ไข / ตั้งวันแจ้งเตือนล่วงหน้า / ลบเอกสาร</p></div>
+      </div>
+      <div class="legend-item">
+        <div class="icon-box"><svg class="icon"><use href="#i-bell"/></svg></div>
+        <div><h3>แจ้งเตือน</h3><p>กดเปิดครั้งแรกต้องอนุญาตเบราว์เซอร์ — ถ้าไม่เด้งป๊อปอัป ให้ดูไอคอนเล็กๆ ขวาแถบ URL</p></div>
+      </div>
+      <div class="legend-item">
+        <div class="icon-box"><svg class="icon"><use href="#i-theme"/></svg></div>
+        <div><h3>สลับธีม</h3><p>โหมดมืด/สว่าง จำค่าล่าสุดที่เลือกไว้อัตโนมัติ</p></div>
+      </div>
+      <div class="legend-item">
+        <div class="icon-box"><svg class="icon"><use href="#i-search"/></svg></div>
+        <div><h3>ค้นหา / กรอง</h3><p>ค้นชื่อ ผู้ออก หรือหมายเลขเอกสาร กรองตามสถานะและหมวด</p></div>
+      </div>
+      <div class="legend-item orange">
+        <div class="icon-box"><svg class="icon"><use href="#i-plus"/></svg></div>
+        <div><h3>เพิ่มเอกสาร</h3><p>กรอกข้อมูลเอกสารใหม่ 24 ประเภทให้เลือก</p></div>
+      </div>
+      <div class="legend-item">
+        <div class="icon-box"><svg class="icon"><use href="#i-download"/></svg></div>
+        <div><h3>ส่งออกข้อมูล</h3><p>บันทึกเป็นไฟล์ JSON สำรองไว้ หรือย้ายไปเปิดเครื่องอื่น</p></div>
+      </div>
+      <div class="legend-item">
+        <div class="icon-box"><svg class="icon"><use href="#i-upload"/></svg></div>
+        <div><h3>นำเข้าข้อมูล</h3><p>เลือกไฟล์ JSON ที่เคยส่งออกไว้ เพื่อดึงข้อมูลกลับ</p></div>
+      </div>
+      <div class="legend-item">
+        <div class="icon-box"><svg class="icon"><use href="#i-calendar"/></svg></div>
+        <div><h3>ส่งออกปฏิทิน</h3><p>ได้ไฟล์ .ics ใส่ปฏิทินมือถือ เตือนวันหมดอายุล่วงหน้า</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REMEMBER -->
+  <section>
+    <div class="section-head">
+      <div class="chip"><svg class="icon"><use href="#i-bookmark"/></svg></div>
+      <h2>จำไว้เสมอ</h2>
+    </div>
+
+    <div class="remember">
+      <div class="remember-item">
+        <svg class="icon"><use href="#i-download"/></svg>
+        <p><b>สำรองข้อมูลเป็นระยะ</b> — ข้อมูลหลักเก็บอยู่ในเบราว์เซอร์/อุปกรณ์เครื่องนั้นๆ (หรือในคลาวด์ถ้าเปิดซิงก์) กด “ส่งออกข้อมูล” เก็บไฟล์ JSON ไว้กันลืม/กันเครื่องพังเป็นระยะๆ อยู่ดี</p>
+      </div>
+      <div class="remember-item">
+        <svg class="icon"><use href="#i-refresh"/></svg>
+        <p><b>เปิดแอปเป็นระยะให้ระบบเช็ก</b> — การแจ้งเตือนทำงานตอนเปิดแอป ไม่ใช่ push จากเซิร์ฟเวอร์กลางแบบอีเมล ถ้าไม่ได้เปิดนานๆ อาจพลาดแจ้งเตือน</p>
+      </div>
+      <div class="remember-item">
+        <svg class="icon"><use href="#i-link"/></svg>
+        <p><b>เปิดซิงก์ข้อมูลข้ามอุปกรณ์ได้แล้ว</b> — กดไอคอนรูปเมฆที่แถบบนสุด ใส่อีเมลเดียวกันบนคอมและมือถือ (ยืนยันผ่านลิงก์ในอีเมล ไม่ต้องตั้งรหัสผ่าน) แล้วข้อมูลจะซิงก์ให้อัตโนมัติทันทีที่แก้ไข</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>LifeDoc Guard — เก็บเอกสารสำคัญ ไม่พลาดวันหมดอายุ</footer>
+</div>
+
+<script>
+  (function () {
+    var url = 'https://lifedoc-guard.netlify.app/';
+    try {
+      var root = getComputedStyle(document.documentElement);
+      new QRCode(document.getElementById('qr-target'), {
+        text: url,
+        width: 112,
+        height: 112,
+        colorDark: root.getPropertyValue('--qr-dark').trim() || '#16345E',
+        colorLight: root.getPropertyValue('--qr-light').trim() || '#FFFFFF',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    } catch (e) { /* QR lib unavailable — link/text still work */ }
+
+    var btn = document.getElementById('copy-btn');
+    var label = document.getElementById('copy-label');
+    btn.addEventListener('click', function () {
+      var text = document.getElementById('app-url').textContent.trim();
+      var full = 'https://' + text;
+      function done(ok) {
+        label.textContent = ok ? 'คัดลอกแล้ว' : 'คัดลอกไม่สำเร็จ';
+        setTimeout(function () { label.textContent = 'คัดลอก'; }, 1600);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(full).then(function () { done(true); }, function () { done(false); });
+      } else {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = full;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          done(true);
+        } catch (e) { done(false); }
+      }
+    });
+  })();
+</script>
+
+</head>
+<body></body>
+</html>

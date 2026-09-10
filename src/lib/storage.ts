@@ -5,6 +5,20 @@ const STORAGE_KEY = 'lifedoc-guard:documents:v1'
 const THEME_KEY = 'lifedoc-guard:theme'
 const SEEDED_KEY = 'lifedoc-guard:seeded'
 
+/** True once Supabase has ever stored a session in localStorage on this device. */
+function hasSupabaseSession(): boolean {
+  try {
+    return Object.keys(localStorage).some((k) => k.startsWith('sb-') && k.endsWith('-auth-token'))
+  } catch {
+    return false
+  }
+}
+
+/** Demo/placeholder documents are id-prefixed so cloud sync can recognize and skip them. */
+export function isDemoDocument(doc: DocumentItem): boolean {
+  return doc.id.startsWith('mock-')
+}
+
 export function loadDocuments(): DocumentItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -13,8 +27,10 @@ export function loadDocuments(): DocumentItem[] {
       if (Array.isArray(parsed)) return parsed as DocumentItem[]
     }
     // First run: seed with the demo dataset once, so the dashboard isn't empty.
+    // Skipped when this device already has a signed-in cloud session — that
+    // means real documents are on their way from Supabase instead.
     const seeded = localStorage.getItem(SEEDED_KEY)
-    if (!seeded) {
+    if (!seeded && !hasSupabaseSession()) {
       localStorage.setItem(SEEDED_KEY, '1')
       saveDocuments(MOCK_DOCUMENTS)
       return MOCK_DOCUMENTS

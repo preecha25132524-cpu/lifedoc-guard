@@ -1,7 +1,8 @@
-import { ShieldCheck, Moon, Sun, Bell, BellOff } from 'lucide-react'
+import { ShieldCheck, Moon, Sun, Bell, BellOff, Cloud, CloudCheck, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ThemeMode } from '@/lib/storage'
+import type { SyncState } from '@/hooks/useDocuments'
 
 interface HeaderProps {
   theme: ThemeMode
@@ -11,6 +12,9 @@ interface HeaderProps {
   notificationsPermission: NotificationPermission
   onEnableNotifications: () => void
   onDisableNotifications: () => void
+  signedIn: boolean
+  syncState: SyncState
+  onOpenSync: () => void
 }
 
 export function Header({
@@ -21,6 +25,9 @@ export function Header({
   notificationsPermission,
   onEnableNotifications,
   onDisableNotifications,
+  signedIn,
+  syncState,
+  onOpenSync,
 }: HeaderProps) {
   const notificationsBlocked = notificationsPermission === 'denied'
   const notificationsActive = notificationsEnabled && notificationsPermission === 'granted'
@@ -36,6 +43,31 @@ export function Header({
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onOpenSync}
+            aria-label={signedIn ? 'สถานะซิงก์ข้อมูล' : 'ซิงก์ข้อมูลข้ามอุปกรณ์'}
+            title={
+              signedIn
+                ? syncState === 'syncing'
+                  ? 'กำลังซิงก์ข้อมูล...'
+                  : 'ซิงก์ข้อมูลข้ามอุปกรณ์เปิดอยู่ — กดเพื่อดูสถานะ'
+                : 'เชื่อมต่อเพื่อซิงก์ข้อมูลข้ามอุปกรณ์ (PC ↔ มือถือ)'
+            }
+            className={cn('border-border/60', signedIn && 'border-primary/50 text-primary')}
+          >
+            {signedIn ? (
+              syncState === 'syncing' ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <CloudCheck className="h-4 w-4" />
+              )
+            ) : (
+              <Cloud className="h-4 w-4" />
+            )}
+          </Button>
+
           {notificationsSupported && (
             <Button
               variant="outline"

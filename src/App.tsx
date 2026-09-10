@@ -6,6 +6,8 @@ import { DocumentGrid } from '@/components/DocumentGrid'
 import { EmptyState } from '@/components/EmptyState'
 import { DocumentFormDialog } from '@/components/DocumentFormDialog'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
+import { SyncDialog } from '@/components/SyncDialog'
+import { useAuth } from '@/hooks/useAuth'
 import { useDocuments } from '@/hooks/useDocuments'
 import { useNotifications } from '@/hooks/useNotifications'
 import { useTheme } from '@/hooks/useTheme'
@@ -23,8 +25,17 @@ const STATUS_RANK: Record<ComputedDoc['status'], number> = {
 
 function App() {
   const { theme, toggleTheme } = useTheme()
-  const { documents, rawDocuments, addDocument, updateDocument, deleteDocument, toggleFavorite, mergeImported } =
-    useDocuments()
+  const auth = useAuth()
+  const {
+    documents,
+    rawDocuments,
+    syncState,
+    addDocument,
+    updateDocument,
+    deleteDocument,
+    toggleFavorite,
+    mergeImported,
+  } = useDocuments(auth.userId)
   const notifications = useNotifications(documents)
 
   const [search, setSearch] = useState('')
@@ -36,6 +47,7 @@ function App() {
   const [editingDoc, setEditingDoc] = useState<ComputedDoc | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<ComputedDoc | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
+  const [syncDialogOpen, setSyncDialogOpen] = useState(false)
 
   const filteredDocuments = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -125,6 +137,9 @@ function App() {
         notificationsPermission={notifications.permission}
         onEnableNotifications={notifications.enable}
         onDisableNotifications={notifications.disable}
+        signedIn={auth.status === 'signedIn'}
+        syncState={syncState}
+        onOpenSync={() => setSyncDialogOpen(true)}
       />
 
       <main className="container space-y-6 pt-6">
@@ -192,6 +207,16 @@ function App() {
         }
         confirmLabel="ลบเอกสาร"
         onConfirm={() => deleteTarget && deleteDocument(deleteTarget.id)}
+      />
+
+      <SyncDialog
+        open={syncDialogOpen}
+        onOpenChange={setSyncDialogOpen}
+        status={auth.status}
+        email={auth.email}
+        syncState={syncState}
+        onSignIn={auth.signInWithEmail}
+        onSignOut={auth.signOut}
       />
     </div>
   )
