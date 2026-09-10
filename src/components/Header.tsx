@@ -1,4 +1,4 @@
-import { ShieldCheck, Moon, Sun, Bell, BellOff, Cloud, CloudCheck, RefreshCw } from 'lucide-react'
+import { ShieldCheck, Moon, Sun, Bell, BellOff, LogIn, UserCheck, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { ThemeMode } from '@/lib/storage'
@@ -47,13 +47,13 @@ export function Header({
             variant="outline"
             size="icon"
             onClick={onOpenSync}
-            aria-label={signedIn ? 'สถานะซิงก์ข้อมูล' : 'ซิงก์ข้อมูลข้ามอุปกรณ์'}
+            aria-label={signedIn ? 'บัญชีของฉัน' : 'เข้าสู่ระบบ / สมัครสมาชิก'}
             title={
               signedIn
                 ? syncState === 'syncing'
                   ? 'กำลังซิงก์ข้อมูล...'
-                  : 'ซิงก์ข้อมูลข้ามอุปกรณ์เปิดอยู่ — กดเพื่อดูสถานะ'
-                : 'เชื่อมต่อเพื่อซิงก์ข้อมูลข้ามอุปกรณ์ (PC ↔ มือถือ)'
+                  : 'เข้าสู่ระบบแล้ว — กดเพื่อดูสถานะซิงก์ข้อมูล'
+                : 'เข้าสู่ระบบ / สมัครสมาชิก เพื่อซิงก์ข้อมูลข้ามอุปกรณ์ (PC ↔ มือถือ)'
             }
             className={cn('border-border/60', signedIn && 'border-primary/50 text-primary')}
           >
@@ -61,10 +61,10 @@ export function Header({
               syncState === 'syncing' ? (
                 <RefreshCw className="h-4 w-4 animate-spin" />
               ) : (
-                <CloudCheck className="h-4 w-4" />
+                <UserCheck className="h-4 w-4" />
               )
             ) : (
-              <Cloud className="h-4 w-4" />
+              <LogIn className="h-4 w-4" />
             )}
           </Button>
 
