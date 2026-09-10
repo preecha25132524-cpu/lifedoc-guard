@@ -1,20 +1,15 @@
 import type { DocumentItem } from '@/types'
-import { MOCK_DOCUMENTS } from '@/data/mockData'
 
 const STORAGE_KEY = 'lifedoc-guard:documents:v1'
 const THEME_KEY = 'lifedoc-guard:theme'
-const SEEDED_KEY = 'lifedoc-guard:seeded'
 
-/** True once Supabase has ever stored a session in localStorage on this device. */
-function hasSupabaseSession(): boolean {
-  try {
-    return Object.keys(localStorage).some((k) => k.startsWith('sb-') && k.endsWith('-auth-token'))
-  } catch {
-    return false
-  }
-}
-
-/** Demo/placeholder documents are id-prefixed so cloud sync can recognize and skip them. */
+/**
+ * Demo/placeholder documents used to be id-prefixed `mock-` and auto-seeded
+ * on first run. Seeding is now off — every new device/account starts truly
+ * blank so a new sign-up only ever sees documents they added themselves.
+ * `isDemoDocument` is kept so cloud sync still recognizes and discards any
+ * leftover `mock-` rows from devices that were seeded before this change.
+ */
 export function isDemoDocument(doc: DocumentItem): boolean {
   return doc.id.startsWith('mock-')
 }
@@ -24,16 +19,7 @@ export function loadDocuments(): DocumentItem[] {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      if (Array.isArray(parsed)) return parsed as DocumentItem[]
-    }
-    // First run: seed with the demo dataset once, so the dashboard isn't empty.
-    // Skipped when this device already has a signed-in cloud session — that
-    // means real documents are on their way from Supabase instead.
-    const seeded = localStorage.getItem(SEEDED_KEY)
-    if (!seeded && !hasSupabaseSession()) {
-      localStorage.setItem(SEEDED_KEY, '1')
-      saveDocuments(MOCK_DOCUMENTS)
-      return MOCK_DOCUMENTS
+      if (Array.isArray(parsed)) return parsed.filter((d) => !isDemoDocument(d)) as DocumentItem[]
     }
     return []
   } catch {

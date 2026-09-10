@@ -58,10 +58,11 @@ export function useDocuments(userId: string | null) {
         const cloudDocs = await fetchCloudDocuments(uid)
 
         if (cloudDocs.length === 0) {
-          // First-ever cloud sync for this account: migrate whatever is on
-          // this device up (including demo data, matching today's fresh-
-          // install experience — there's nothing real in the cloud to lose).
-          const localDocs = documentsRef.current
+          // First-ever cloud sync for this account (e.g. a brand-new
+          // sign-up): migrate up only genuine local documents, never any
+          // leftover demo/placeholder rows — a new account should always
+          // start blank and be filled in by the person themselves.
+          const localDocs = documentsRef.current.filter((d) => !isDemoDocument(d))
           if (localDocs.length > 0) await upsertCloudDocuments(uid, localDocs)
           if (!cancelled) {
             setDocuments(localDocs)

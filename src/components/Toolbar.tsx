@@ -84,6 +84,11 @@ export function Toolbar({
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="ค้นหาเอกสาร ชื่อ ผู้ออก หรือหมายเลข..."
             className="h-10 rounded-xl pl-9 pr-8"
+            type="search"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            name="lifedoc-search"
           />
           {search && (
             <button
