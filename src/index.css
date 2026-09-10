@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light theme — NewVeerachai brand: ice/sky base, deep-navy text, orange CTA */
+    --background: 206 80% 96%;
+    --foreground: 215 55% 18%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 55% 18%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 55% 18%;
+
+    --primary: 24 95% 51%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 211 55% 95%;
+    --secondary-foreground: 215 55% 20%;
+
+    --muted: 210 40% 95%;
+    --muted-foreground: 215 20% 45%;
+
+    --accent: 211 65% 92%;
+    --accent-foreground: 215 55% 20%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 69% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 32 95% 52%;
+    --warning-foreground: 20 30% 12%;
+
+    --critical: 0 84% 60%;
+    --critical-foreground: 0 0% 100%;
+
+    --border: 211 45% 87%;
+    --input: 211 45% 87%;
+    --ring: 212 68% 52%;
+
+    --radius: 1rem;
+  }
+
+  .dark {
+    /* Dark slate/zinc base (default) — NewVeerachai brand accent: orange CTA, blue focus ring */
+    --background: 240 10% 4%;
+    --foreground: 240 5% 96%;
+
+    --card: 240 6% 10%;
+    --card-foreground: 240 5% 96%;
+
+    --popover: 240 8% 8%;
+    --popover-foreground: 240 5% 96%;
+
+    --primary: 24 95% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 16%;
+    --secondary-foreground: 240 5% 96%;
+
+    --muted: 240 5% 16%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 240 5% 18%;
+    --accent-foreground: 240 5% 96%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 60% 45%;
+    --success-foreground: 152 60% 8%;
+
+    --warning: 32 95% 58%;
+    --warning-foreground: 32 60% 10%;
+
+    --critical: 0 84% 63%;
+    --critical-foreground: 0 0% 100%;
+
+    --border: 240 5% 20%;
+    --input: 240 5% 20%;
+    --ring: 212 68% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    background-image:
+      radial-gradient(circle at 15% 0%, hsl(var(--primary) / 0.12), transparent 40%),
+      radial-gradient(circle at 85% 0%, hsl(212 68% 52% / 0.08), transparent 35%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+  .glass {
+    @apply bg-card/70 backdrop-blur-md;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
