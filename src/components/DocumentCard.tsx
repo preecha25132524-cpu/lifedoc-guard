@@ -77,7 +77,7 @@ export function DocumentCard({
       {/* Header: icon, title, favorite */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-800/80 text-foreground">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-secondary/80 text-foreground">
             <Icon className="h-5 w-5" strokeWidth={1.8} />
           </div>
           <div className="min-w-0">
