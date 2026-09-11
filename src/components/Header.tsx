@@ -13,6 +13,7 @@ interface HeaderProps {
   onEnableNotifications: () => void
   onDisableNotifications: () => void
   signedIn: boolean
+  email: string | null
   syncState: SyncState
   onOpenSync: () => void
 }
@@ -26,6 +27,7 @@ export function Header({
   onEnableNotifications,
   onDisableNotifications,
   signedIn,
+  email,
   syncState,
   onOpenSync,
 }: HeaderProps) {
@@ -43,30 +45,37 @@ export function Header({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onOpenSync}
-            aria-label={signedIn ? 'บัญชีของฉัน' : 'เข้าสู่ระบบ / สมัครสมาชิก'}
-            title={
-              signedIn
-                ? syncState === 'syncing'
-                  ? 'กำลังซิงก์ข้อมูล...'
-                  : 'เข้าสู่ระบบแล้ว — กดเพื่อดูสถานะซิงก์ข้อมูล'
-                : 'เข้าสู่ระบบ / สมัครสมาชิก เพื่อซิงก์ข้อมูลข้ามอุปกรณ์ (PC ↔ มือถือ)'
-            }
-            className={cn('border-border/60', signedIn && 'border-primary/50 text-primary')}
-          >
-            {signedIn ? (
-              syncState === 'syncing' ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
+          {signedIn && email ? (
+            <Button
+              variant="outline"
+              onClick={onOpenSync}
+              aria-label={`เข้าสู่ระบบด้วย ${email} — กดเพื่อดูสถานะหรือออกจากระบบ`}
+              title={
+                syncState === 'syncing'
+                  ? `กำลังซิงก์ข้อมูล... (${email})`
+                  : `เข้าสู่ระบบด้วย ${email} — กดเพื่อดูสถานะซิงก์ข้อมูลหรือออกจากระบบ`
+              }
+              className="h-9 max-w-[8.5rem] gap-1.5 rounded-xl border-primary/50 px-2.5 text-primary sm:max-w-[12rem]"
+            >
+              {syncState === 'syncing' ? (
+                <RefreshCw className="h-4 w-4 shrink-0 animate-spin" />
               ) : (
-                <UserCheck className="h-4 w-4" />
-              )
-            ) : (
+                <UserCheck className="h-4 w-4 shrink-0" />
+              )}
+              <span className="truncate text-xs font-medium normal-case">{email}</span>
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onOpenSync}
+              aria-label="เข้าสู่ระบบ / สมัครสมาชิก"
+              title="เข้าสู่ระบบ / สมัครสมาชิก เพื่อซิงก์ข้อมูลข้ามอุปกรณ์ (PC ↔ มือถือ)"
+              className="border-border/60"
+            >
               <LogIn className="h-4 w-4" />
-            )}
-          </Button>
+            </Button>
+          )}
 
           {notificationsSupported && (
             <Button

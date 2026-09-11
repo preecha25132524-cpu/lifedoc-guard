@@ -145,6 +145,7 @@ function App() {
         onEnableNotifications={notifications.enable}
         onDisableNotifications={notifications.disable}
         signedIn={auth.status === 'signedIn'}
+        email={auth.email}
         syncState={syncState}
         onOpenSync={() => setSyncDialogOpen(true)}
       />
