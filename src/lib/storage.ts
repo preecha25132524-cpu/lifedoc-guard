@@ -2,6 +2,7 @@ import type { DocumentItem } from '@/types'
 
 const STORAGE_KEY = 'lifedoc-guard:documents:v1'
 const THEME_KEY = 'lifedoc-guard:theme'
+const LAST_SYNCED_UID_KEY = 'lifedoc-guard:last-synced-uid'
 
 /**
  * Demo/placeholder documents used to be id-prefixed `mock-` and auto-seeded
@@ -32,6 +33,38 @@ export function saveDocuments(docs: DocumentItem[]) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(docs))
   } catch (err) {
     console.error('ไม่สามารถบันทึกข้อมูลลง localStorage ได้', err)
+  }
+}
+
+/** Wipes the local document cache outright (no seeding/reload involved). */
+export function clearDocuments() {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
+/**
+ * Tracks which Supabase account's data this device's local cache currently
+ * reflects. Used to detect "a different account just signed in on this same
+ * device/browser" so leftover local documents from a previous account never
+ * get merged/pushed into the new one — see useDocuments' cloud-sync effect.
+ */
+export function getLastSyncedUserId(): string | null {
+  try {
+    return localStorage.getItem(LAST_SYNCED_UID_KEY)
+  } catch {
+    return null
+  }
+}
+
+export function setLastSyncedUserId(userId: string | null) {
+  try {
+    if (userId) localStorage.setItem(LAST_SYNCED_UID_KEY, userId)
+    else localStorage.removeItem(LAST_SYNCED_UID_KEY)
+  } catch {
+    /* ignore */
   }
 }
 

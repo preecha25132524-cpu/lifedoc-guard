@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { DocumentDraft, DocumentItem } from '@/types'
-import { isDemoDocument, loadDocuments, saveDocuments } from '@/lib/storage'
+import {
+  clearDocuments,
+  getLastSyncedUserId,
+  isDemoDocument,
+  loadDocuments,
+  saveDocuments,
+  setLastSyncedUserId,
+} from '@/lib/storage'
 import { genId, withComputed } from '@/lib/utils'
 import {
   deleteCloudDocument,
@@ -46,8 +53,33 @@ export function useDocuments(userId: string | null) {
   // Initial cloud merge + realtime subscription whenever a user signs in.
   useEffect(() => {
     if (!userId) {
+      // Signed out. If this device's local cache was left over from a
+      // signed-in session, wipe it — otherwise the next person to open the
+      // app on this device (a different account signing in, or someone
+      // just browsing signed-out) would see the previous account's synced
+      // documents as if they were their own local data.
+      if (getLastSyncedUserId()) {
+        clearDocuments()
+        setLastSyncedUserId(null)
+        setDocuments([])
+      }
       setSyncState('idle')
       return
+    }
+
+    // A different Supabase account just became active on this device than
+    // whatever last synced here (a brand-new sign-up, or switching accounts
+    // on a shared/test device). Whatever is currently in local
+    // state/localStorage belongs to that PREVIOUS account, not this one —
+    // clear it before doing anything else, so it can never be merged or
+    // pushed into this account's cloud data. Without this, every new
+    // account signing in on the same device would inherit whatever
+    // documents the last account happened to leave behind.
+    const lastUid = getLastSyncedUserId()
+    if (lastUid && lastUid !== userId) {
+      clearDocuments()
+      documentsRef.current = []
+      setDocuments([])
     }
 
     let cancelled = false
@@ -61,11 +93,15 @@ export function useDocuments(userId: string | null) {
           // First-ever cloud sync for this account (e.g. a brand-new
           // sign-up): migrate up only genuine local documents, never any
           // leftover demo/placeholder rows — a new account should always
-          // start blank and be filled in by the person themselves.
+          // start blank and be filled in by the person themselves. (Any
+          // leftover documents from a previous account on this device were
+          // already cleared above, so `localDocs` here can only be real,
+          // un-synced documents this account itself created offline.)
           const localDocs = documentsRef.current.filter((d) => !isDemoDocument(d))
           if (localDocs.length > 0) await upsertCloudDocuments(uid, localDocs)
           if (!cancelled) {
             setDocuments(localDocs)
+            setLastSyncedUserId(uid)
             setSyncState('synced')
           }
           return
@@ -93,6 +129,7 @@ export function useDocuments(userId: string | null) {
 
         if (!cancelled) {
           setDocuments(merged)
+          setLastSyncedUserId(uid)
           setSyncState('synced')
         }
       } catch (err) {
